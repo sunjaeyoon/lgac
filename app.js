@@ -1,13 +1,14 @@
-const createError = require('http-errors');
-const express = require('express');
+const createError    = require('http-errors');
+const express        = require('express');
 const expressLayouts = require('express-ejs-layouts');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
-const mongoose = require('mongoose');
-const passport = require('passport');
-const flash = require('connect-flash');
-const session = require('express-session');
+const path           = require('path');
+const cookieParser   = require('cookie-parser');
+const logger         = require('morgan');
+const mongoose       = require('mongoose');
+const passport       = require('passport');
+const flash          = require('connect-flash');
+const session        = require('express-session');
+const bodyParser     = require('body-parser');
 
 require('./config/passport')(passport);
 
@@ -29,10 +30,12 @@ app.use(express.urlencoded({ extended: false }));
 
 //Express Session
 app.use(session({
-  secret: 'keyboard cat',
-  resave:false,
+  secret: 'secrettest',
+  resave:true,
   saveUninitialized: true,
-  cookie: {secure:true}
+  //store: new MongoStore({url: ,
+  //  collection:'sessions'}),
+  cookie: {secure:false}
   }))
 
 //Passport Middleware
@@ -54,18 +57,22 @@ app.use((req, res, next) => {
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+//Bodyparser Middleware
+app.use(bodyParser.json())
+
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 //Routes
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var   apiRouter = require('./routes/api/items');
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/api/items',apiRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
